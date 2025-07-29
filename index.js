@@ -6,7 +6,6 @@
 
 const express = require('express')
 const fs = require('fs')
-const characters = require('./user.json')
 const app = express()
 const port = 3000
 
