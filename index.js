@@ -6,6 +6,7 @@
 
 const express = require('express')
 const fs = require('fs')
+const { title } = require('process')
 const app = express()
 const port = 3000
 
@@ -61,6 +62,43 @@ app.post('/characters', (req, res) => {
         })
     })
 
+})
+
+app.put('/characters/:id', (req, res) => {
+   const id = parseInt(req.params.id);
+   const { name, realName, universe } = req.body;
+
+   fs.readFile('./user.json', 'utf8', (err, data) => {
+        if (err) return res.status(500).send('Error reading file');
+        const jsonData = JSON.parse(data);
+        const characterIndex = jsonData.characters.findIndex(c => c.id === id);
+        if (characterIndex === -1) return res.status(404).send('Character not found');
+
+        if(name) jsonData.characters[characterIndex].name = name;
+        if(realName) jsonData.characters[characterIndex].realName = realName;
+        if(universe) jsonData.characters[characterIndex].universe = universe;
+    
+        fs.writeFile('./user.json', JSON.stringify(jsonData, null, 2), (err) => {
+            if (err) return res.status(500).send('Error writing file');
+            res.send('Character updated successfully');
+        })
+   })  
+})
+
+app.delete('/characters/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    fs.readFile('./user.json', 'utf8', (err, data) => {
+        if (err) return res.status(500).send('Error reading file');
+        const jsonData = JSON.parse(data);
+        const characterIndex = jsonData.characters.findIndex(c => c.id === id);
+        if (characterIndex === -1) return res.status(404).send('Character not found');
+        jsonData.characters.splice(characterIndex, 1);
+        
+        fs.writeFile('./user.json', JSON.stringify(jsonData, null, 2), (err) => {
+            if (err) return res.status(500).send('Error writing file');
+            res.send('Character deleted successfully');
+        })
+    }) 
 })
 
 app.listen(port, () => {
